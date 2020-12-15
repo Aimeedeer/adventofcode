@@ -11,13 +11,14 @@ fn main() -> Result<()> {
 	let num = line?.parse::<i32>()?;
 	num_list.push(num);
     }
-    num_list.sort();
 
     'outloop: for num1 in &num_list {
 	for num2 in &num_list {
-	    if *num2 == 2020 - num1 {
-		println!("num1: {} * num2: {} is {}", num1, num2, num1*num2);
-		break 'outloop;
+	    for num3 in &num_list {
+		if num1 + num2 + num3 == 2020 {
+		    println!("num1: {} * num2: {} * num3: {} is {}", num1, num2, num3, num1*num2*num3);
+		    break 'outloop;
+		}
 	    }
 	}
     }
