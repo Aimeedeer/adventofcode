@@ -16,19 +16,19 @@ fn main() -> Result<()> {
 	let scope_from = scope[0].parse::<i32>()?;
 	let scope_until = scope[1].parse::<i32>()?;
 
-	let include_char = rules[1].trim_end_matches(':').parse::<char>()?;
+	let valid_char = rules[1].trim_end_matches(':').parse::<char>()?;
 	let password = &rules[2];
 
-	let mut num_valid = 0;
+	let mut num_valid_char = 0;
 	for c in password.chars() {
-	    if c == include_char {
-		num_valid += 1;
+	    if c == valid_char {
+		num_valid_char += 1;
 	    }
 	}
 
-	println!("include_char: {}, count: {}, scope: {}-{}, password: {:?} ", include_char, num_valid, scope_from, scope_until, password);
+//	println!("valid_char: {}, count: {}, scope: {}-{}, password: {:?} ", valid_char, num_valid_char, scope_from, scope_until, password);
 		
-	if num_valid >= scope_from && num_valid <= scope_until {
+	if num_valid_char >= scope_from && num_valid_char <= scope_until {
 	    num += 1;
 	} else {
 	    continue;
