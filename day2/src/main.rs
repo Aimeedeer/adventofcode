@@ -9,7 +9,18 @@ fn main() -> Result<()> {
     let mut num: i32 = 0;
     
     for line in reader.lines() {
-	let rules = line?;
+	let line = line?;
+	let rules_password = line.split(':').collect::<Vec<_>>();
+	let rules = rules_password[0];
+	let password = rules_password[1];
+
+	let range_char = rules.split(&['-', ' '][..]).collect::<Vec<_>>();
+	let index_1 = range_char[0].parse::<usize>()?;
+	let index_2 = range_char[1].parse::<usize>()?;
+	let valid_char = range_char[2].parse::<char>()?;
+
+	/*
+	// Old ones
 	let rules = rules.trim().split(' ').collect::<Vec<_>>();
 
 	let valid_char = rules[1].trim_end_matches(':').parse::<char>()?;
@@ -18,24 +29,18 @@ fn main() -> Result<()> {
 	let indexes = rules[0].split('-').collect::<Vec<_>>();
 	let index_1 = indexes[0].parse::<usize>()?;
 	let index_2 = indexes[1].parse::<usize>()?;
-
+	 */
+	
 	// part 1
-	/*
-	let mut num_valid_char = 0;
-	for c in password.chars() {
-	    if c == valid_char {
-		num_valid_char += 1;
-	    }
-	}
+	let num_valid_char = password.chars().filter(|c| *c == valid_char).count();
 
 	if num_valid_char >= index_1 && num_valid_char <= index_2 {
 	    num += 1;
-	} else {
-	    continue;
 	}
-	*/
+
 
 	// part 2
+/*
 	let index_1 = index_1 - 1;
 	let index_2 = index_2 - 1;
 
@@ -48,11 +53,9 @@ fn main() -> Result<()> {
 	    } else {
 		continue;
 	    }
-
+*/
     }
     println!("{} valid passwords", num);
 
     Ok(())
 }
-
-
