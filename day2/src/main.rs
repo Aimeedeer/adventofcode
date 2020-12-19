@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufReader, prelude::*};
 use anyhow::Result;
+use anyhow::anyhow;
 
 fn main() -> Result<()> {    
     let file = File::open("input.txt")?;
@@ -10,14 +11,23 @@ fn main() -> Result<()> {
     
     for line in reader.lines() {
 	let line = line?;
-	let rules_password = line.split(':').collect::<Vec<_>>();
-	let rules = rules_password[0];
-	let password = rules_password[1];
+	let mut rules_password = line.split(':');
+	let rules = rules_password.next().ok_or(anyhow!("parse rules failed"))?;
+	let password = rules_password.next().ok_or(anyhow!("parse password failed"))?;
 
-	let range_char = rules.split(&['-', ' '][..]).collect::<Vec<_>>();
-	let index_1 = range_char[0].parse::<usize>()?;
-	let index_2 = range_char[1].parse::<usize>()?;
-	let valid_char = range_char[2].parse::<char>()?;
+	let mut range_char = rules.split(&['-', ' '][..]);
+	let index_1 = range_char
+	    .next()
+	    .ok_or(anyhow!("parse index one failed"))?
+	    .parse::<usize>()?;
+	let index_2 = range_char
+	    .next()
+	    .ok_or(anyhow!("parse index two failed"))?
+	    .parse::<usize>()?;
+	let valid_char = range_char
+	    .next()
+	    .ok_or(anyhow!("parse valid char failed"))?
+	    .parse::<char>()?;
 
 	/*
 	// Old ones
