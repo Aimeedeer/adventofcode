@@ -56,16 +56,14 @@ fn main() -> Result<()> {
 	let index_1 = index_1 - 1;
 	let index_2 = index_2 - 1;
 
-	if password.chars().nth(index_1) == password.chars().nth(index_2) {
+	let password = password.chars().collect::<Vec<char>>();
+	
+	if password.get(index_1) == password.get(index_2) {
 	    continue;
 	}
-	if (password.chars().nth(index_1) == Some(valid_char))
-	    || (password.chars().nth(index_2) == Some(valid_char)) {
-		num += 1;
-	    } else {
-		continue;
-	    }
-
+	if password.get(index_1) == Some(&valid_char) || password.get(index_2) == Some(&valid_char) {
+	    num += 1;
+	}
     }
     println!("{} valid passwords", num);
 
