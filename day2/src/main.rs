@@ -2,15 +2,26 @@ use std::fs::File;
 use std::io::{BufReader, prelude::*};
 use anyhow::Result;
 use anyhow::anyhow;
+use regex::Regex;
 
 fn main() -> Result<()> {    
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
 
     let mut num: i32 = 0;
+    let re = Regex::new(r"(\d+)-(\d+) ([[:alpha:]]): ([[:alpha:]]+)")?;
     
     for line in reader.lines() {
 	let line = line?;
+	let caps = re.captures(&line).ok_or(anyhow!("parse line"))?;
+
+	let index_1 = caps[1].parse::<usize>()?;
+	let index_2 = caps[2].parse::<usize>()?;
+	let valid_char = caps[3].parse::<char>()?;
+	let password = &caps[4];
+	
+	/*
+	// second round parse
 	let mut rules_password = line.split(':');
 	let rules = rules_password.next().ok_or(anyhow!("parse rules failed"))?;
 	let password = rules_password.next().ok_or(anyhow!("parse password failed"))?;
@@ -28,6 +39,7 @@ fn main() -> Result<()> {
 	    .next()
 	    .ok_or(anyhow!("parse valid char failed"))?
 	    .parse::<char>()?;
+	*/
 
 	/*
 	// Old ones
