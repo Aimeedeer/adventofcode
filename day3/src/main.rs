@@ -7,14 +7,9 @@ fn main() -> Result<()> {
     let reader = BufReader::new(file);
 
     let mut tree_num = 0;
-
-    // index moving
+    let mut char_num = 0;
     let mut index = 3;
 
-    // how many chars in a line
-    let mut char_num = 0;
-
-    // ignore the first line
     for line in reader.lines().skip(1) {
 	let rules = line?;
 	let rules = rules.chars().collect::<Vec<char>>();
