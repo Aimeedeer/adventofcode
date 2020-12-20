@@ -53,8 +53,8 @@ fn main() -> Result<()> {
 	let index_2 = indexes[1].parse::<usize>()?;
 	 */
 	
-	// part 1
 	/*
+	// part 1
 	let num_valid_char = password.chars().filter(|c| *c == valid_char).count();
 
 	if num_valid_char >= index_1 && num_valid_char <= index_2 {
@@ -64,7 +64,6 @@ fn main() -> Result<()> {
 
 
 	// part 2
-
 	let index_1 = index_1 - 1;
 	let index_2 = index_2 - 1;
 
