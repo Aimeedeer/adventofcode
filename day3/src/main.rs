@@ -29,26 +29,20 @@ fn path_rules(move_right: usize, move_down: usize) -> Result<usize> {
     let mut tree_num = 0;
 
     for (line_index, line_value) in reader.lines().enumerate().skip(1) {
-	match (line_index, line_value) {
-	    (line_index, line_value) if line_index % move_down == 0 =>  {
-		let rules = line_value?;
-		let rules = rules.chars().collect::<Vec<char>>();
-		tree_num += counting_with_rules(rules, index);
-	    }
-	    _ =>  continue
-	index += move_right;
+	if line_index % move_down == 0 {
+	    let rules = line_value?;
+	    let rules = rules.chars().collect::<Vec<char>>();
+	    let char_num = rules.len();
+
+	    if rules[index] == '#' {
+		tree_num += 1;
+	    } 
+	    
+	    index += move_right;
+	    index %= char_num;
+	}
     }
 
     Ok(tree_num)
 }
 
-fn counting_with_rules (rules: Vec<char>, index: usize) -> usize {
-    let char_num = rules.len();
-    let index = index % char_num;
-
-    if rules[index] == '#' {
-	1
-    } else {
-	0
-    }
-}
