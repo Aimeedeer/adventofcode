@@ -25,9 +25,33 @@ fn path_rules(move_right: usize, move_down: usize) -> Result<usize> {
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
 
-    let mut index = move_right;
     let mut tree_num = 0;
+    let mut index = 0;
 
+    // second round
+    let mut iter = reader.lines();
+
+    while let Some(line) = iter.next() {	
+	let rules = line?;
+	let rules = rules.chars().collect::<Vec<char>>();
+	let char_num = rules.len();
+
+	if rules[index] == '#' {
+	    tree_num += 1;
+	} 
+
+	for _ in 0..(move_down - 1) {
+	    iter.next();	    
+	}
+
+	index += move_right;
+	index %= char_num;
+    }
+
+
+    /*
+    // first round
+    let mut index = move_right;
     for (line_index, line_value) in reader.lines().enumerate().skip(1) {
 	if line_index % move_down == 0 {
 	    let rules = line_value?;
@@ -42,6 +66,7 @@ fn path_rules(move_right: usize, move_down: usize) -> Result<usize> {
 	    index %= char_num;
 	}
     }
+     */
 
     Ok(tree_num)
 }
