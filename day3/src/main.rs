@@ -28,10 +28,8 @@ fn path_rules(move_right: usize, move_down: usize) -> Result<usize> {
     let mut tree_num = 0;
     let mut index = 0;
 
-    // second round
-    let mut iter = reader.lines();
-
-    while let Some(line) = iter.next() {	
+    // third round/final
+    for line in reader.lines().step_by(move_down) {
 	let rules = line?;
 	let rules = rules.chars().collect::<Vec<char>>();
 	let char_num = rules.len();
@@ -39,10 +37,6 @@ fn path_rules(move_right: usize, move_down: usize) -> Result<usize> {
 	if rules[index] == '#' {
 	    tree_num += 1;
 	} 
-
-	for _ in 0..(move_down - 1) {
-	    iter.next();	    
-	}
 
 	index += move_right;
 	index %= char_num;
