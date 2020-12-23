@@ -3,18 +3,11 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
 fn main() -> Result<()> {
-    
     let num1 = path_rules(1, 1)?;
     let num2 = path_rules(3, 1)?;
     let num3 = path_rules(5, 1)?;
     let num4 = path_rules(7, 1)?;
     let num5 = path_rules(1, 2)?;
-
-    dbg!(num1);
-    dbg!(num2);
-    dbg!(num3);
-    dbg!(num4);
-    dbg!(num5);
     
     println!("{:?} trees", num1 * num2 * num3 * num4 * num5);
 
