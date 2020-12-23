@@ -51,6 +51,7 @@ fn main() -> Result<()>{
 
 	for raw in raw_passport {
 	    let data = raw.parse::<PassportData>()?;
+	    
 	    let key = &data[1];
 	    let value = &data[2];
 
