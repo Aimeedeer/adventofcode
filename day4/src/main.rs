@@ -44,6 +44,20 @@ impl Passport {
 	    hgt,
 	}
     }
+
+    pub fn is_valid(&self) -> bool {
+	if self.pid != None
+	    && self.eyr != None
+	    && self.byr != None
+	    && self.iyr != None
+	    && self.ecl != None
+	    && self.hcl != None
+	    && self.hgt != None		{
+		true
+	    } else {
+		false
+	    }
+    }
 }
 
 fn main() -> Result<()>{
@@ -55,7 +69,6 @@ fn main() -> Result<()>{
     let mut passport_vec: Vec<Passport> = vec![];
 
     for p in raw_passport_vec {
-//	dbg!(&p);
 	let raw_passport = p.trim().split(&[' ', '\n'][..]).collect::<Vec<_>>();
 	
 	let mut pid = None;
@@ -95,14 +108,7 @@ fn verify(passport_vec: Vec<Passport>) -> u32 {
     let mut num = 0;
 
     for passport in passport_vec {
-	if passport.pid != None
-	    && passport.eyr != None
-	    && passport.byr != None
-	    && passport.iyr != None
-	    && passport.ecl != None
-	    && passport.hcl != None
-	    && passport.hgt != None	    
-	{	    
+	if passport.is_valid() {
 	    num += 1;
 	}
     }
