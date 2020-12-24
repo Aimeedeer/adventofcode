@@ -13,26 +13,26 @@ struct PassportVec {
 
 #[derive(Debug)]
 struct Passport {
-    pub pid: String,
-    pub cid: u32,
-    pub eyr: u32,
-    pub byr: u32,
-    pub iyr: u32,
-    pub ecl: String,
-    pub hcl: String,
-    pub hgt: String,
+    pub pid: Option<String>,
+    pub cid: Option<u32>,
+    pub eyr: Option<u32>,
+    pub byr: Option<u32>,
+    pub iyr: Option<u32>,
+    pub ecl: Option<String>,
+    pub hcl: Option<String>,
+    pub hgt: Option<String>,
 }
 
 impl Passport {
     pub fn new(
-	pid: String,
-	cid: u32,
-	eyr: u32,
-	byr: u32,
-	iyr: u32,
-	ecl: String,
-	hcl: String,
-	hgt: String) -> Self {
+	pid: Option<String>,
+	cid: Option<u32>,
+	eyr: Option<u32>,
+	byr: Option<u32>,
+	iyr: Option<u32>,
+	ecl: Option<String>,
+	hcl: Option<String>,
+	hgt: Option<String>) -> Self {
 	Self {
 	    pid,
 	    cid, 
@@ -52,41 +52,33 @@ fn main() -> Result<()>{
     file.read_to_string(&mut buffer)?;
 
     let raw_passport_vec = &buffer.split("\n\n").collect::<Vec<_>>();
-//    let re_passport = Regex::new(r"(([[:alpha:]]{3}):(#|\d|[[:alnum:]]+)([\s\n]))")?;
-    
     let mut passport_vec: Vec<Passport> = vec![];
 
     for p in raw_passport_vec {
+//	dbg!(&p);
 	let raw_passport = p.trim().split(&[' ', '\n'][..]).collect::<Vec<_>>();
 	
-	let mut pid = String::new();
-	let mut cid = 0;
-	let mut iyr = 0;
-	let mut eyr = 0;
-	let mut byr = 0;
-	let mut ecl = String::new();
-	let mut hcl = String::new();
-	let mut hgt = String::new();
+	let mut pid = None;
+	let mut cid = None;
+	let mut iyr = None;
+	let mut eyr = None;
+	let mut byr = None;
+	let mut ecl = None;
+	let mut hcl = None;
+	let mut hgt = None;
 
 	for raw_item in raw_passport {
-//	    dbg!(&raw_item);
 	    let item = raw_item.split(':').collect::<Vec<_>>();
 
 	    match item[0] {
-		"pid" => {
-		    pid = item[1].to_string();
-//		    dbg!(&pid);
-		},
-		"cid" => {
-		    cid = item[1].parse::<u32>()?;
-//			   dbg!(cid);
-		},
-		"iyr" => { iyr = item[1].parse::<u32>()?; },
-		"eyr" => { eyr = item[1].parse::<u32>()?; },
-		"byr" => { byr = item[1].parse::<u32>()?; },
-		"ecl" => { ecl = item[1].to_string(); },
-		"hcl" => { hcl = item[1].to_string(); },
-		"hgt" => { hgt = item[1].to_string(); },
+		"pid" => { pid = Some(item[1].to_string()); },
+		"cid" => { cid = Some(item[1].parse::<u32>()?); },
+		"iyr" => { iyr = Some(item[1].parse::<u32>()?); },
+		"eyr" => { eyr = Some(item[1].parse::<u32>()?); },
+		"byr" => { byr = Some(item[1].parse::<u32>()?); },
+		"ecl" => { ecl = Some(item[1].to_string()); },
+		"hcl" => { hcl = Some(item[1].to_string()); },
+		"hgt" => { hgt = Some(item[1].to_string()); },
 		_ => {},
 	    };
 	}
@@ -103,13 +95,13 @@ fn verify(passport_vec: Vec<Passport>) -> u32 {
     let mut num = 0;
 
     for passport in passport_vec {
-	if &passport.pid != ""
-	    && passport.eyr != 0
-	    && passport.byr != 0
-	    && passport.iyr != 0
-	    && &passport.ecl != ""
-	    && &passport.hcl != ""
-	    && &passport.hgt != ""	    
+	if passport.pid != None
+	    && passport.eyr != None
+	    && passport.byr != None
+	    && passport.iyr != None
+	    && passport.ecl != None
+	    && passport.hcl != None
+	    && passport.hgt != None	    
 	{	    
 	    num += 1;
 	}
