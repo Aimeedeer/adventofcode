@@ -1,15 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
 use anyhow::Result;
-use anyhow::anyhow;
-use regex::Regex;
-
-/*
-#[derive(Debug)]
-struct PassportVec {
-    passports: Vec<Passport>,
-}
-*/
 
 #[derive(Debug)]
 struct Passport {
@@ -45,18 +36,24 @@ impl Passport {
 	}
     }
 
+    /* fn two
     pub fn is_valid(&self) -> bool {
-	if self.pid != None
-	    && self.eyr != None
-	    && self.byr != None
-	    && self.iyr != None
-	    && self.ecl != None
-	    && self.hcl != None
-	    && self.hgt != None		{
-		true
-	    } else {
-		false
-	    }
+	match (&self.pid, self.eyr, self.byr, self.iyr, &self.ecl, &self.hcl, &self.hgt) {
+	    (&Some(_), Some(_), Some(_), Some(_), &Some(_), &Some(_), &Some(_)) =>  true,
+	    _ => false,
+	}	
+    }
+    */
+    
+    // fn one
+    pub fn is_valid(&self) -> bool {
+	self.pid.is_some()
+	    && self.eyr.is_some()
+	    && self.byr.is_some()
+	    && self.iyr.is_some() 
+	    && self.ecl.is_some() 
+	    && self.hcl.is_some() 
+	    && self.hgt.is_some() 
     }
 }
 
