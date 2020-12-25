@@ -1,14 +1,47 @@
 use std::fs::File;
 use std::io::prelude::*;
 use anyhow::Result;
+use anyhow::anyhow;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
+struct Year {
+    year: u32,
+}
+
+impl Year {    
+    pub fn eyr(year: u32) -> Result<Year> {
+	if year < 2020 || year > 2030 {
+	    Ok(Year { year, })
+	} else {
+	    Err(anyhow!("invalid eyr: {}", year))
+	}
+    }
+    
+    pub fn iyr(year: u32) -> Result<Year> {
+	if year < 2010 || year > 2020 {
+	    Ok(Year { year, })
+	} else {
+	    Err(anyhow!("invalid iyr: {}", year))
+	}
+    }
+    
+    pub fn byr(year: u32) -> Result<Year> {
+	if year < 1920 || year > 2002 {
+	    Ok(Year { year, })
+	} else {
+	    Err(anyhow!("invalid byr: {}", year))
+	}
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone)]
 struct Passport {
     pub pid: Option<String>,
     pub cid: Option<u32>,
-    pub eyr: Option<u32>,
-    pub byr: Option<u32>,
-    pub iyr: Option<u32>,
+    pub eyr: Option<Year>,
+    pub byr: Option<Year>,
+    pub iyr: Option<Year>,
     pub ecl: Option<String>,
     pub hcl: Option<String>,
     pub hgt: Option<String>,
@@ -18,9 +51,9 @@ impl Passport {
     pub fn new(
 	pid: Option<String>,
 	cid: Option<u32>,
-	eyr: Option<u32>,
-	byr: Option<u32>,
-	iyr: Option<u32>,
+	eyr: Option<Year>,
+	byr: Option<Year>,
+	iyr: Option<Year>,
 	ecl: Option<String>,
 	hcl: Option<String>,
 	hgt: Option<String>) -> Self {
@@ -36,16 +69,6 @@ impl Passport {
 	}
     }
 
-    /* fn two
-    pub fn is_valid(&self) -> bool {
-	match (&self.pid, self.eyr, self.byr, self.iyr, &self.ecl, &self.hcl, &self.hgt) {
-	    (&Some(_), Some(_), Some(_), Some(_), &Some(_), &Some(_), &Some(_)) =>  true,
-	    _ => false,
-	}	
-    }
-    */
-    
-    // fn one
     pub fn is_valid(&self) -> bool {
 	self.pid.is_some()
 	    && self.eyr.is_some()
@@ -76,6 +99,8 @@ fn main() -> Result<()>{
 	let mut ecl = None;
 	let mut hcl = None;
 	let mut hgt = None;
+	dbg!(&raw_passport);
+
 
 	for raw_item in raw_passport {
 	    let item = raw_item.split(':').collect::<Vec<_>>();
@@ -83,20 +108,20 @@ fn main() -> Result<()>{
 	    match item[0] {
 		"pid" => { pid = Some(item[1].to_string()); },
 		"cid" => { cid = Some(item[1].parse::<u32>()?); },
-		"iyr" => { iyr = Some(item[1].parse::<u32>()?); },
-		"eyr" => { eyr = Some(item[1].parse::<u32>()?); },
-		"byr" => { byr = Some(item[1].parse::<u32>()?); },
+		"iyr" => { iyr = Year::iyr(item[1].parse::<u32>()?).ok(); },
+		"eyr" => { eyr = Year::eyr(item[1].parse::<u32>()?).ok(); },
+		"byr" => { byr = Year::byr(item[1].parse::<u32>()?).ok(); },
 		"ecl" => { ecl = Some(item[1].to_string()); },
 		"hcl" => { hcl = Some(item[1].to_string()); },
-		"hgt" => { hgt = Some(item[1].to_string()); },
+		"hgt" => { hgt = hgt_is_valid(item[1].to_string()).ok(); },
 		_ => {},
 	    };
 	}
-
 	let passport = Passport::new(pid, cid, iyr, eyr, byr, ecl, hcl, hgt);
+	dbg!(&passport);
 	passport_vec.push(passport);
     }
-
+    
     println!("Valid passports: {}", verify(passport_vec));
     Ok(())
 }
@@ -111,3 +136,32 @@ fn verify(passport_vec: Vec<Passport>) -> u32 {
     }
     num
 }
+
+pub fn hgt_is_valid(hgt: String) -> Result<String> {
+    let err = Err(anyhow!("invalid hgt: {:?}", hgt));
+    let len = hgt.len();
+    let num = &hgt[0..(len - 2)].parse::<i32>()?;
+    
+    if hgt.ends_with("cm") {	
+	if *num >= 150 && *num <= 193 {
+//  	    dbg!(&hgt);
+//	    dbg!(num);
+
+	    Ok(hgt)
+	} else {
+	    err
+	}
+    } else if hgt.ends_with("in") {
+	if *num >= 59 && *num <= 76 {
+//    	    dbg!(&hgt);
+//	    dbg!(num);
+	    
+	    Ok(hgt)
+	} else {
+	    err
+	}
+    } else {
+	err 
+    }
+}
+
