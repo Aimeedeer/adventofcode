@@ -69,18 +69,23 @@ fn main() -> Result<()>{
 	let mut hcl = None;
 	let mut hgt = None;
 
+	fn validate<T>(dest: &mut Option<T>,
+		       reference: &str,
+		       v: impl FnOnce(&str) -> Result<T>) {
+	    *dest = v(reference).ok();	    	    
+	}
+	
 	for raw_item in raw_passport {
 	    let item = raw_item.split(':').collect::<Vec<_>>();
-
-	    match item[0] {
-		"pid" => { pid = validate_pid(item[1]).ok(); },
-		"cid" => { cid = validate_cid(item[1]).ok(); },
-		"eyr" => { eyr = validate_eyr(item[1]).ok(); },
-		"byr" => { byr = validate_byr(item[1]).ok(); },
-		"iyr" => { iyr = validate_iyr(item[1]).ok(); },
-		"ecl" => { ecl = validate_ecl(item[1]).ok(); },
-		"hcl" => { hcl = validate_hcl(item[1]).ok(); },
-		"hgt" => { hgt = validate_hgt(item[1]).ok(); },
+	    match item[0] {	
+		"pid" => validate(&mut pid, item[1], validate_pid),
+		"cid" => validate(&mut cid, item[1], validate_cid),
+		"eyr" => validate(&mut eyr, item[1], validate_eyr),
+		"byr" => validate(&mut byr, item[1], validate_byr),
+		"iyr" => validate(&mut iyr, item[1], validate_iyr),
+		"ecl" => validate(&mut ecl, item[1], validate_ecl),
+		"hcl" => validate(&mut hcl, item[1], validate_hcl),
+		"hgt" => validate(&mut hgt, item[1], validate_hgt),
 		_ => {},
 	    };
 	}
@@ -155,7 +160,6 @@ pub fn validate_byr(year: &str) -> Result<u32> {
 	Err(anyhow!("invalid byr: {}", year))
     }
 }
-
 
 pub fn validate_hcl(hcl: &str) -> Result<String> {
     let re = Regex::new(r"#(([a-f]|[0-9]){6})").unwrap();
