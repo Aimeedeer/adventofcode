@@ -2,15 +2,16 @@ use std::fs::File;
 use std::io::prelude::*;
 use anyhow::Result;
 use anyhow::anyhow;
+use regex::Regex;
 
 #[derive(Debug, PartialEq, Clone)]
 struct Year {
     year: u32,
 }
 
-impl Year {    
+impl Year {
     pub fn eyr(year: u32) -> Result<Year> {
-	if year < 2020 || year > 2030 {
+	if year >= 2020 && year <= 2030 {
 	    Ok(Year { year, })
 	} else {
 	    Err(anyhow!("invalid eyr: {}", year))
@@ -18,7 +19,7 @@ impl Year {
     }
     
     pub fn iyr(year: u32) -> Result<Year> {
-	if year < 2010 || year > 2020 {
+	if year >= 2010 && year <= 2020 {
 	    Ok(Year { year, })
 	} else {
 	    Err(anyhow!("invalid iyr: {}", year))
@@ -26,7 +27,7 @@ impl Year {
     }
     
     pub fn byr(year: u32) -> Result<Year> {
-	if year < 1920 || year > 2002 {
+	if year >= 1920 && year <= 2002 {
 	    Ok(Year { year, })
 	} else {
 	    Err(anyhow!("invalid byr: {}", year))
@@ -34,14 +35,15 @@ impl Year {
     }
 }
 
+ 
 
 #[derive(Debug, PartialEq, Clone)]
 struct Passport {
     pub pid: Option<String>,
     pub cid: Option<u32>,
-    pub eyr: Option<Year>,
-    pub byr: Option<Year>,
-    pub iyr: Option<Year>,
+    pub	eyr: Option<Year>,
+    pub	byr: Option<Year>,
+    pub	iyr: Option<Year>,
     pub ecl: Option<String>,
     pub hcl: Option<String>,
     pub hgt: Option<String>,
@@ -67,7 +69,7 @@ impl Passport {
 	    hcl,
 	    hgt,
 	}
-    }
+    } 
 
     pub fn is_valid(&self) -> bool {
 	self.pid.is_some()
@@ -87,7 +89,7 @@ fn main() -> Result<()>{
 
     let raw_passport_vec = &buffer.split("\n\n").collect::<Vec<_>>();
     let mut passport_vec: Vec<Passport> = vec![];
-
+    
     for p in raw_passport_vec {
 	let raw_passport = p.trim().split(&[' ', '\n'][..]).collect::<Vec<_>>();
 	
@@ -99,42 +101,68 @@ fn main() -> Result<()>{
 	let mut ecl = None;
 	let mut hcl = None;
 	let mut hgt = None;
-	dbg!(&raw_passport);
-
 
 	for raw_item in raw_passport {
 	    let item = raw_item.split(':').collect::<Vec<_>>();
 
 	    match item[0] {
-		"pid" => { pid = Some(item[1].to_string()); },
+		"pid" => { pid = pid_is_valid(item[1].to_string()).ok(); },
 		"cid" => { cid = Some(item[1].parse::<u32>()?); },
-		"iyr" => { iyr = Year::iyr(item[1].parse::<u32>()?).ok(); },
 		"eyr" => { eyr = Year::eyr(item[1].parse::<u32>()?).ok(); },
 		"byr" => { byr = Year::byr(item[1].parse::<u32>()?).ok(); },
-		"ecl" => { ecl = Some(item[1].to_string()); },
-		"hcl" => { hcl = Some(item[1].to_string()); },
+		"iyr" => { iyr = Year::iyr(item[1].parse::<u32>()?).ok(); },
+		"ecl" => { ecl = ecl_is_valid(item[1].to_string()).ok(); },
+		"hcl" => { hcl = hcl_is_valid(item[1].to_string()).ok(); },
 		"hgt" => { hgt = hgt_is_valid(item[1].to_string()).ok(); },
 		_ => {},
 	    };
 	}
-	let passport = Passport::new(pid, cid, iyr, eyr, byr, ecl, hcl, hgt);
-	dbg!(&passport);
+
+	let passport = Passport::new(pid, cid, eyr, byr, iyr, ecl, hcl, hgt);
+
+//	dbg!(&passport);
 	passport_vec.push(passport);
     }
-    
+
+    println!("hi &passport_vec.len(): {}", &passport_vec.len());
     println!("Valid passports: {}", verify(passport_vec));
+
     Ok(())
 }
 
 fn verify(passport_vec: Vec<Passport>) -> u32 {
     let mut num = 0;
-
     for passport in passport_vec {
 	if passport.is_valid() {
+	    println!("{:#?}", &passport);
+
 	    num += 1;
 	}
     }
     num
+}
+
+pub fn pid_is_valid(pid: String) -> Result<String> {
+    let re = Regex::new(r"(\d{9})").unwrap();
+    let caps = re.captures(&pid).ok_or(anyhow!("invalid pid: {:?}", pid))?;
+    let pid = caps[1].to_string();
+
+    Ok(pid)
+}
+
+pub fn hcl_is_valid(hcl: String) -> Result<String> {
+    let re = Regex::new(r"#(([a-f]|[0-9]){6})").unwrap();
+    let caps = re.captures(&hcl).ok_or(anyhow!("invalid hcl: {:?}", hcl))?;
+    let hcl = caps[1].to_string();
+    
+    Ok(hcl)
+}
+
+pub fn ecl_is_valid(ecl: String) -> Result<String> {
+    match ecl.as_ref() {
+	"amb" | "blu" |	"brn" |	"gry" |	"grn" |	"hzl" | "oth" => Ok(ecl),
+	_ => Err(anyhow!("invalid ecl: {:?}", ecl)),
+    }
 }
 
 pub fn hgt_is_valid(hgt: String) -> Result<String> {
@@ -144,18 +172,12 @@ pub fn hgt_is_valid(hgt: String) -> Result<String> {
     
     if hgt.ends_with("cm") {	
 	if *num >= 150 && *num <= 193 {
-//  	    dbg!(&hgt);
-//	    dbg!(num);
-
 	    Ok(hgt)
 	} else {
 	    err
 	}
     } else if hgt.ends_with("in") {
 	if *num >= 59 && *num <= 76 {
-//    	    dbg!(&hgt);
-//	    dbg!(num);
-	    
 	    Ok(hgt)
 	} else {
 	    err
