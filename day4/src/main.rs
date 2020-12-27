@@ -155,14 +155,11 @@ pub fn validate_byr(year: &str) -> Result<u32> {
 }
 
 pub fn validate_hcl(hcl: &str) -> Result<String> {
-    let hcl = parse_and_capture(r"#(([a-f]|[0-9]){6})", hcl, "hcl")?;
-
-    Ok(hcl)
+    parse_and_capture(r"#(([a-f]|[0-9]){6})", hcl, "hcl")
 }
 
 pub fn validate_ecl(ecl: &str) -> Result<String> {
-    let ecl = parse_and_capture(r"(amb|blu|brn|gry|grn|hzl|oth)", ecl, "ecl")?;
-    Ok(ecl)
+    parse_and_capture(r"(amb|blu|brn|gry|grn|hzl|oth)", ecl, "ecl")
 }
 
 pub fn validate_hgt(hgt: &str) -> Result<String> {
