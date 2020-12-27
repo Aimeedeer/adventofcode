@@ -171,10 +171,8 @@ pub fn validate_hcl(hcl: &str) -> Result<String> {
 }
 
 pub fn validate_ecl(ecl: &str) -> Result<String> {
-    match ecl {
-	"amb" | "blu" |	"brn" |	"gry" |	"grn" |	"hzl" | "oth" => Ok(ecl.to_string()),
-	_ => Err(anyhow!("invalid ecl: {:?}", ecl)),
-    }
+    let ecl = parse_and_capture(r"(amb|blu|brn|gry|grn|hzl|oth)", ecl, "ecl")?;
+    Ok(ecl)
 }
 
 pub fn validate_hgt(hgt: &str) -> Result<String> {
