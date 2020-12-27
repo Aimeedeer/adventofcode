@@ -5,41 +5,20 @@ use anyhow::Result;
 use anyhow::anyhow;
 use regex::Regex;
 
-#[derive(Debug, PartialEq, Clone)]
-struct Passport {
-    pub pid: Option<String>,
-    pub cid: Option<u32>,
-    pub	eyr: Option<u32>,
-    pub	byr: Option<u32>,
-    pub	iyr: Option<u32>,
-    pub ecl: Option<String>,
-    pub hcl: Option<String>,
-    pub hgt: Option<String>,
+#[derive(Debug, PartialEq, Clone, Default)]
+struct RawPassport {
+    pid: Option<String>,
+    cid: Option<u32>,
+    eyr: Option<u32>,
+    byr: Option<u32>,
+    iyr: Option<u32>,
+    ecl: Option<String>,
+    hcl: Option<String>,
+    hgt: Option<String>,
 }
 
-impl Passport {
-    pub fn new(
-	pid: Option<String>,
-	cid: Option<u32>,
-	eyr: Option<u32>,
-	byr: Option<u32>,
-	iyr: Option<u32>,
-	ecl: Option<String>,
-	hcl: Option<String>,
-	hgt: Option<String>) -> Self {
-	Self {
-	    pid,
-	    cid, 
-	    eyr,
-	    byr,
-	    iyr,
-	    ecl,
-	    hcl,
-	    hgt,
-	}
-    } 
-
-    pub fn is_valid(&self) -> bool {
+impl RawPassport {
+    fn is_valid(&self) -> bool {
 	self.pid.is_some()
 	    && self.eyr.is_some()
 	    && self.byr.is_some()
@@ -47,6 +26,37 @@ impl Passport {
 	    && self.ecl.is_some() 
 	    && self.hcl.is_some() 
 	    && self.hgt.is_some() 
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+struct Passport {
+    pid: String,
+    cid: Option<u32>,
+    eyr: u32,
+    byr: u32,
+    iyr: u32,
+    ecl: String,
+    hcl: String,
+    hgt: String,
+}
+
+impl Passport {
+    fn new(raw_passport: RawPassport) -> Option<Passport> {
+	if raw_passport.is_valid() {
+	    Some(Passport {
+		pid: raw_passport.pid.unwrap(),
+		cid: raw_passport.cid,
+		eyr: raw_passport.eyr.unwrap(),
+		byr: raw_passport.byr.unwrap(),
+		iyr: raw_passport.iyr.unwrap(),
+		ecl: raw_passport.ecl.unwrap(),
+		hcl: raw_passport.hcl.unwrap(),
+		hgt: raw_passport.hgt.unwrap(),
+	    })
+	} else {
+	    None
+	}	    
     }
 }
 
@@ -60,16 +70,9 @@ fn main() -> Result<()>{
     
     for p in raw_passport_vec {
 	let raw_passport = p.trim().split(&[' ', '\n'][..]).collect::<Vec<_>>();
-	
-	let mut pid = None;
-	let mut cid = None;
-	let mut iyr = None;
-	let mut eyr = None;
-	let mut byr = None;
-	let mut ecl = None;
-	let mut hcl = None;
-	let mut hgt = None;
 
+	let mut new_passport = RawPassport::default();
+	
 	fn validate<T>(dest: &mut Option<T>,
 		       reference: &str,
 		       v: impl FnOnce(&str) -> Result<T>) {
@@ -79,39 +82,26 @@ fn main() -> Result<()>{
 	for raw_item in raw_passport {
 	    let item = raw_item.split(':').collect::<Vec<_>>();
 	    match item[0] {	
-		"pid" => validate(&mut pid, item[1], validate_pid),
-		"cid" => validate(&mut cid, item[1], validate_cid),
-		"eyr" => validate(&mut eyr, item[1], validate_eyr),
-		"byr" => validate(&mut byr, item[1], validate_byr),
-		"iyr" => validate(&mut iyr, item[1], validate_iyr),
-		"ecl" => validate(&mut ecl, item[1], validate_ecl),
-		"hcl" => validate(&mut hcl, item[1], validate_hcl),
-		"hgt" => validate(&mut hgt, item[1], validate_hgt),
+		"pid" => validate(&mut new_passport.pid, item[1], validate_pid),
+		"cid" => validate(&mut new_passport.cid, item[1], validate_cid),
+		"eyr" => validate(&mut new_passport.eyr, item[1], validate_eyr),
+		"byr" => validate(&mut new_passport.byr, item[1], validate_byr),
+		"iyr" => validate(&mut new_passport.iyr, item[1], validate_iyr),
+		"ecl" => validate(&mut new_passport.ecl, item[1], validate_ecl),
+		"hcl" => validate(&mut new_passport.hcl, item[1], validate_hcl),
+		"hgt" => validate(&mut new_passport.hgt, item[1], validate_hgt),
 		_ => {},
 	    };
 	}
 
-	let passport = Passport::new(pid, cid, eyr, byr, iyr, ecl, hcl, hgt);
-	if passport.is_valid() {
-	    println!("{}\n", p);
-	}
-	
-	passport_vec.push(passport);
+	if let Some(passport) = Passport::new(new_passport){
+	    passport_vec.push(passport);
+	}	
     }
 
-    println!("Valid passports: {}", verify(passport_vec));
+    println!("Valid passports: {}", passport_vec.len());
 
     Ok(())
-}
-
-fn verify(passport_vec: Vec<Passport>) -> u32 {
-    let mut num = 0;
-    for passport in passport_vec {
-	if passport.is_valid() {
-	    num += 1;
-	}
-    }
-    num
 }
 
 fn parse_and_capture<T: FromStr>(rule: &str, input: &str, msg: &str) -> Result<T> {
@@ -133,9 +123,7 @@ fn validate_year(year: &str, least: u32, most: u32, msg: &str) -> Result<u32> {
 }
 
 fn validate_pid(pid: &str) -> Result<String> {
-    let pid = parse_and_capture(r"(\d{9})", pid, "pid")?;
-
-    Ok(pid)
+    parse_and_capture(r"(\d{9})", pid, "pid")
 }
 
 fn validate_cid(cid: &str) -> Result<u32> {
@@ -150,19 +138,19 @@ fn validate_iyr(year: &str) -> Result<u32> {
     validate_year(year, 2010, 2020, "iyr")    
 }
 
-pub fn validate_byr(year: &str) -> Result<u32> {
+fn validate_byr(year: &str) -> Result<u32> {
     validate_year(year, 1920, 2002, "byr")    
 }
 
-pub fn validate_hcl(hcl: &str) -> Result<String> {
+fn validate_hcl(hcl: &str) -> Result<String> {
     parse_and_capture(r"#(([a-f]|[0-9]){6})", hcl, "hcl")
 }
 
-pub fn validate_ecl(ecl: &str) -> Result<String> {
+fn validate_ecl(ecl: &str) -> Result<String> {
     parse_and_capture(r"(amb|blu|brn|gry|grn|hzl|oth)", ecl, "ecl")
 }
 
-pub fn validate_hgt(hgt: &str) -> Result<String> {
+fn validate_hgt(hgt: &str) -> Result<String> {
     let err = Err(anyhow!("invalid hgt: {:?}", hgt));
     let len = hgt.len();
     let num = hgt[0..(len - 2)].parse::<i32>()?;
