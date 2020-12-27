@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
+use std::str::FromStr;
 use anyhow::Result;
 use anyhow::anyhow;
 use regex::Regex;
@@ -125,10 +126,16 @@ pub fn validate_cid(cid: &str) -> Result<u32> {
     Ok(cid.parse::<u32>()?)
 }
 
+fn parse_and_capture<T: FromStr>(rule: &str, input: &str, msg: &str) -> Result<T> {
+    let re = Regex::new(rule).unwrap();
+    let caps = re.captures(input).ok_or(anyhow!("invalid {}: {}", msg, input))?;
+
+    let output = caps[1].parse::<T>().map_err(|_| anyhow!("error parsing {}: {}", msg, input))?;
+    Ok(output)
+}
+
 pub fn validate_eyr(year: &str) -> Result<u32> {
-    let re = Regex::new(r"(\d{4})").unwrap();
-    let caps = re.captures(year).ok_or(anyhow!("invalid year: {:?}", year))?;
-    let year = caps[1].parse::<u32>()?;
+    let year = parse_and_capture(r"(\d{4})", year, "year")?;
     
     if year >= 2020 && year <= 2030 {
 	Ok(year)
@@ -138,9 +145,7 @@ pub fn validate_eyr(year: &str) -> Result<u32> {
 }
 
 pub fn validate_iyr(year: &str) -> Result<u32> {
-    let re = Regex::new(r"(\d{4})").unwrap();
-    let caps = re.captures(year).ok_or(anyhow!("invalid year: {:?}", year))?;
-    let year = caps[1].parse::<u32>()?;	
+    let year = parse_and_capture(r"(\d{4})", year, "year")?;
 
     if year >= 2010 && year <= 2020 {
 	Ok(year)
@@ -150,10 +155,8 @@ pub fn validate_iyr(year: &str) -> Result<u32> {
 }
 
 pub fn validate_byr(year: &str) -> Result<u32> {
-    let re = Regex::new(r"(\d{4})").unwrap();
-    let caps = re.captures(year).ok_or(anyhow!("invalid year: {:?}", year))?;
-    let year = caps[1].parse::<u32>()?;
-    
+    let year = parse_and_capture(r"(\d{4})", year, "year")?;
+
     if year >= 1920 && year <= 2002 {
 	Ok(year)
     } else {
@@ -162,9 +165,7 @@ pub fn validate_byr(year: &str) -> Result<u32> {
 }
 
 pub fn validate_hcl(hcl: &str) -> Result<String> {
-    let re = Regex::new(r"#(([a-f]|[0-9]){6})").unwrap();
-    let caps = re.captures(hcl).ok_or(anyhow!("invalid hcl: {:?}", hcl))?;
-    let hcl = caps[1].to_string();
+    let hcl = parse_and_capture(r"#(([a-f]|[0-9]){6})", hcl, "hcl")?;
 
     Ok(hcl)
 }
@@ -183,16 +184,12 @@ pub fn validate_hgt(hgt: &str) -> Result<String> {
 
     if hgt.ends_with("cm") {	
 	if num >= 150 && num <= 193 {
-	    //          dbg!(&hgt);
-
 	    Ok(hgt.to_string())
 	} else {
 	    err
 	}
     } else if hgt.ends_with("in") {
 	if num >= 59 && num <= 76 {
-	    //            dbg!(&hgt);
-	    
 	    Ok(hgt.to_string())
 	} else {
 	    err
