@@ -114,18 +114,6 @@ fn verify(passport_vec: Vec<Passport>) -> u32 {
     num
 }
 
-pub fn validate_pid(pid: &str) -> Result<String> {
-    let re = Regex::new(r"(\d{9})").unwrap();
-    let caps = re.captures(pid).ok_or(anyhow!("invalid pid: {:?}", pid))?;
-    let pid = caps[1].to_string();
-
-    Ok(pid)
-}
-
-pub fn validate_cid(cid: &str) -> Result<u32> {
-    Ok(cid.parse::<u32>()?)
-}
-
 fn parse_and_capture<T: FromStr>(rule: &str, input: &str, msg: &str) -> Result<T> {
     let re = Regex::new(rule).unwrap();
     let caps = re.captures(input).ok_or(anyhow!("invalid {}: {}", msg, input))?;
@@ -134,34 +122,36 @@ fn parse_and_capture<T: FromStr>(rule: &str, input: &str, msg: &str) -> Result<T
     Ok(output)
 }
 
-pub fn validate_eyr(year: &str) -> Result<u32> {
+fn validate_year(year: &str, least: u32, most: u32, msg: &str) -> Result<u32> {
     let year = parse_and_capture(r"(\d{4})", year, "year")?;
     
-    if year >= 2020 && year <= 2030 {
+    if year >= least && year <= most {
 	Ok(year)
     } else {
-	Err(anyhow!("invalid eyr: {}", year))
+	Err(anyhow!("invalid {}: {}", msg, year))
     }
 }
 
-pub fn validate_iyr(year: &str) -> Result<u32> {
-    let year = parse_and_capture(r"(\d{4})", year, "year")?;
+fn validate_pid(pid: &str) -> Result<String> {
+    let pid = parse_and_capture(r"(\d{9})", pid, "pid")?;
 
-    if year >= 2010 && year <= 2020 {
-	Ok(year)
-    } else {
-	Err(anyhow!("invalid iyr: {}", year))
-    }
+    Ok(pid)
+}
+
+fn validate_cid(cid: &str) -> Result<u32> {
+    Ok(cid.parse::<u32>()?)
+}
+
+fn validate_eyr(year: &str) -> Result<u32> {
+    validate_year(year, 2020, 2030, "eyr")    
+}
+
+fn validate_iyr(year: &str) -> Result<u32> {
+    validate_year(year, 2010, 2020, "iyr")    
 }
 
 pub fn validate_byr(year: &str) -> Result<u32> {
-    let year = parse_and_capture(r"(\d{4})", year, "year")?;
-
-    if year >= 1920 && year <= 2002 {
-	Ok(year)
-    } else {
-	Err(anyhow!("invalid byr: {}", year))
-    }
+    validate_year(year, 1920, 2002, "byr")    
 }
 
 pub fn validate_hcl(hcl: &str) -> Result<String> {
