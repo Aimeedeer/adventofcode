@@ -14,7 +14,7 @@ fn main() -> Result<()>{
     let mut passport_vec: Vec<Passport> = vec![];
     
     for p in raw_passport_vec {
-	let raw_passport = p.trim().split(&[' ', '\n'][..]).collect::<Vec<_>>();
+	let raw_passport = p.split(&[' ', '\n'][..]).collect::<Vec<_>>();
 
 	let mut new_passport = RawPassport::default();
 	
@@ -104,7 +104,7 @@ impl Passport {
 }
 
 fn validate_pid(pid: &str) -> Result<String> {
-    parse_and_capture(r"(\d{9})", pid, "pid")
+    parse_and_capture(r"^(\d{9})$", pid, "pid")
 }
 
 fn validate_cid(cid: &str) -> Result<u32> {
@@ -124,15 +124,15 @@ fn validate_byr(year: &str) -> Result<u32> {
 }
 
 fn validate_hcl(hcl: &str) -> Result<String> {
-    parse_and_capture(r"#(([a-f]|[0-9]){6})", hcl, "hcl")
+    parse_and_capture(r"^#(([a-f]|[0-9]){6})$", hcl, "hcl")
 }
 
 fn validate_ecl(ecl: &str) -> Result<String> {
-    parse_and_capture(r"(amb|blu|brn|gry|grn|hzl|oth)", ecl, "ecl")
+    parse_and_capture(r"^(amb|blu|brn|gry|grn|hzl|oth)$", ecl, "ecl")
 }
 
 fn validate_hgt(hgt: &str) -> Result<String> {
-    let re = Regex::new(r"(\d+)(cm|in)").unwrap();
+    let re = Regex::new(r"^(\d+)(cm|in)$").unwrap();
     let caps = re.captures(hgt).ok_or(anyhow!("invalid hgt: {}", hgt))?;
 
     let num = caps[1].parse::<u32>()?;
@@ -154,7 +154,7 @@ fn parse_and_capture<T: FromStr>(rule: &str, input: &str, msg: &str) -> Result<T
 }
 
 fn validate_year(year: &str, least: u32, most: u32, msg: &str) -> Result<u32> {
-    let year = parse_and_capture(r"(\d{4})", year, "year")?;
+    let year = parse_and_capture(r"^(\d{4})$", year, "year")?;
     
     if year >= least && year <= most {
 	Ok(year)
