@@ -132,25 +132,17 @@ fn validate_ecl(ecl: &str) -> Result<String> {
 }
 
 fn validate_hgt(hgt: &str) -> Result<String> {
-    let err = Err(anyhow!("invalid hgt: {:?}", hgt));
-    let len = hgt.len();
-    let num = hgt[0..(len - 2)].parse::<i32>()?;
+    let re = Regex::new(r"(\d+)(cm|in)").unwrap();
+    let caps = re.captures(hgt).ok_or(anyhow!("invalid hgt: {}", hgt))?;
 
-    if hgt.ends_with("cm") {	
-	if num >= 150 && num <= 193 {
-	    Ok(hgt.to_string())
-	} else {
-	    err
-	}
-    } else if hgt.ends_with("in") {
-	if num >= 59 && num <= 76 {
-	    Ok(hgt.to_string())
-	} else {
-	    err
-	}
-    } else {
-	err 
-    }
+    let num = caps[1].parse::<u32>()?;
+    let unit = &caps[2];
+
+    match unit {
+	"cm" if num >= 150 && num <= 193 => Ok(hgt.to_string()),
+	"in" if num >= 59 && num <= 76 => Ok(hgt.to_string()),
+	_ => Err(anyhow!("invalid hgt: {}", hgt)),
+    }    
 }
 
 fn parse_and_capture<T: FromStr>(rule: &str, input: &str, msg: &str) -> Result<T> {
