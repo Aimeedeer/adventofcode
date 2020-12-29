@@ -25,7 +25,23 @@ fn main() -> Result<()>{
     let higest_seat_id = seat_id_vec[seat_id_vec.len() - 1];
     println!("The highest seat ID: {}", higest_seat_id);
 
+    let my_seat_id = get_my_seat_id(seat_id_vec);
+    println!("My seat ID: {}", my_seat_id);
+    
     Ok(())
+}
+
+fn get_my_seat_id(all_seat_ids: Vec<u32>) -> u32 {
+    let mut id = 0;
+    let iter = all_seat_ids.windows(2);
+
+    for pair in iter {
+	if pair[1] - pair[0] == 2 {
+	    id = pair[0] + 1;
+	}
+    }
+
+    id
 }
 
 fn get_row_id(input: &str) -> Result<u32> {
