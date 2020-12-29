@@ -1,5 +1,5 @@
 use anyhow::Result;
-use anyhow::anyhow;
+use anyhow::bail;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -8,7 +8,7 @@ fn main() -> Result<()> {
     let reader = BufReader::new(file);
 
     let mut seat_id_vec: Vec<u32> = Vec::new();
-    
+
     for line in reader.lines() {
 	let rules = line?;
 	let rule_row = &rules[0..7];
@@ -46,48 +46,36 @@ fn get_my_seat_id(all_seat_ids: Vec<u32>) -> u32 {
 }
 
 fn get_row_id(input: &str) -> Result<u32> {
-    let range = (0..128).into_iter().collect::<Vec<_>>();
-    let mut range = range.as_slice();
-    
-    for c in input.chars() {
-	let len = range.len();
-	let (front, back) = range.split_at(len/2);
-
-	match c {
-	    'F' => {
-		range = front;
-	    },
-	    'B' => {
-		range = back;
-	    },
-	    _ => { anyhow!("get row id failed"); },
-	}
-    }
-    
-    let row_id = range[0];
-    Ok(row_id)
+    search_id(input, 128, 'F', 'B', "row id")
 }
 
 fn get_column_id(input: &str) -> Result<u32> {
-    let range = (0..8).into_iter().collect::<Vec<_>>();
-    let mut range = range.as_slice();
-    
-    for c in input.chars() {
-	let len = range.len();
-	let (left, right) = range.split_at(len/2);
-
-	match c {
-	    'L' => {
-		range = left;
-	    },
-	    'R' => {
-		range = right;
-	    }
-	    _ => { anyhow!("get column id failed"); },
-	}
-    }
-
-    let column_id = range[0];    
-    Ok(column_id)
+    search_id(input, 8, 'L', 'R', "column id")
 }
 
+fn search_id(
+    input: &str,
+    len: u32,
+    match_char_one: char,
+    match_char_two: char,
+    msg: &str	     
+) -> Result<u32> {
+    let range = (0..len).into_iter().collect::<Vec<_>>();
+    let mut range = range.as_slice();
+
+    for c in input.chars() {
+	let temp_len = range.len();
+	let (one, two) = range.split_at(temp_len/2);
+
+	if c == match_char_one {
+	    range = one;
+	} else if c == match_char_two {
+	    range = two;
+	} else {
+	    bail!("get {} failed", msg); 
+	}
+    }
+    
+    let id = range[0];    
+    Ok(id)
+}
