@@ -57,6 +57,7 @@ fn search_id(
     match_char_two: char,
     msg: &str	     
 ) -> Result<u32> {
+    // todo: more efficient way?
     let range = (0..len).into_iter().collect::<Vec<_>>();
     let mut range = range.as_slice();
 
