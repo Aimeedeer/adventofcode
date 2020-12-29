@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
-fn main() -> Result<()>{
+fn main() -> Result<()> {
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
 
@@ -17,7 +17,8 @@ fn main() -> Result<()>{
 	let row_id = get_row_id(&rule_row)?;
 	let column_id = get_column_id(&rule_column)?;
 
-	let seat_id = row_id * 8 + column_id;
+	const NUM_COLUMNS: u32 = 8; 
+	let seat_id = row_id * NUM_COLUMNS + column_id;
 	seat_id_vec.push(seat_id);
     }
     seat_id_vec.sort();
@@ -45,7 +46,8 @@ fn get_my_seat_id(all_seat_ids: Vec<u32>) -> u32 {
 }
 
 fn get_row_id(input: &str) -> Result<u32> {
-    let mut range = create_vec(128);
+    let range = (0..128).into_iter().collect::<Vec<_>>();
+    let mut range = range.as_slice();
     
     for c in input.chars() {
 	let len = range.len();
@@ -53,10 +55,10 @@ fn get_row_id(input: &str) -> Result<u32> {
 
 	match c {
 	    'F' => {
-		range = front.to_vec();
+		range = front;
 	    },
 	    'B' => {
-		range = back.to_vec();
+		range = back;
 	    },
 	    _ => { anyhow!("get row id failed"); },
 	}
@@ -67,18 +69,19 @@ fn get_row_id(input: &str) -> Result<u32> {
 }
 
 fn get_column_id(input: &str) -> Result<u32> {
-    let mut range = create_vec(8);
-
+    let range = (0..8).into_iter().collect::<Vec<_>>();
+    let mut range = range.as_slice();
+    
     for c in input.chars() {
 	let len = range.len();
 	let (left, right) = range.split_at(len/2);
 
 	match c {
 	    'L' => {
-		range = left.to_vec();
+		range = left;
 	    },
 	    'R' => {
-		range = right.to_vec();
+		range = right;
 	    }
 	    _ => { anyhow!("get column id failed"); },
 	}
@@ -88,11 +91,3 @@ fn get_column_id(input: &str) -> Result<u32> {
     Ok(column_id)
 }
 
-fn create_vec(len: u32) -> Vec<u32> {
-    let mut rows: Vec<u32> = Vec::with_capacity(len as usize);
-    
-    for i in 0..len {
-        rows.push(i);
-    }
-    rows
-}
