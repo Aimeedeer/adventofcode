@@ -33,16 +33,13 @@ fn main() -> Result<()> {
 }
 
 fn get_my_seat_id(all_seat_ids: Vec<u32>) -> u32 {
-    let mut id = 0;
-    let iter = all_seat_ids.windows(2);
-
-    for pair in iter {
+    all_seat_ids.windows(2).find_map(|pair| {
 	if pair[1] - pair[0] == 2 {
-	    id = pair[0] + 1;
+	    Some(pair[0] + 1)
+	} else {
+	    None
 	}
-    }
-
-    id
+    } ).expect("get my seat id failed")
 }
 
 fn get_row_id(input: &str) -> Result<u32> {
