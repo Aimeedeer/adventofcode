@@ -76,6 +76,7 @@ fn is_my_bag_in_map(candidate_bag: &str, map: &HashMap<String, HashMap<String, u
 fn bags_contained(candidate_bag: &str, map: &HashMap<String, HashMap<String, u32>>) -> u32 {
     let candidate_bag = map.get(candidate_bag).unwrap();
     let mut num = 0;
+
     for (k, v) in candidate_bag.iter() {
         num += v + v * bags_contained(k, map);
     }
