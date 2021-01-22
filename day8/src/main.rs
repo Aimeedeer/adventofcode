@@ -13,56 +13,73 @@ lazy_static! {
 }
 
 fn main() -> Result<()> {
+    let instructions = parser()?;    
+    run_instructions(instructions)
+}
+
+#[derive(Debug)]
+struct Operation {
+    op: String,
+    num: i32,
+    sequence: usize,
+}
+
+fn parser() -> Result<Vec<Operation>> {
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
 
-    let mut instructions = Vec::<(String, i32, usize)>::new();
+    let mut instructions = Vec::<Operation>::new();
 
     for line in reader.lines() {
         let line = line?;
         let caps = RE.captures(&line).unwrap();
 
-        let instruction = (caps[1].to_string(),
-                           caps[2].parse::<i32>()?,
-                           0);
-
-        instructions.push(instruction);
+        let operation = Operation {
+            op: caps[1].to_string(),
+            num: caps[2].parse::<i32>()?,
+            sequence: 0,
+        };
+            
+        instructions.push(operation);
     }
+    
+    Ok(instructions)
+}
 
-    let mut count: usize = 0;
-    let mut index: usize = 0;
+fn run_instructions(mut instructions: Vec<Operation>) -> Result<()>{
+    let mut op_sequence = 0;
+    let mut op_index = 0;
     let mut global_acc = 0;
-        
+    
     loop {
-        let step = &instructions[index];
+        let operation = &instructions[op_index];
         
-        if step.2 != 0 {
-            println!("Break at index: {}; instruction: {:?}; count: {}; global_acc: {}", index, step, count, global_acc);
+        if operation.sequence != 0 {
+            println!("Break at index: {}; operation: {:?}; sequence: {}; global_acc: {}", op_index, operation, op_sequence, global_acc);
             break;
         }
 
         let jmp_num;
         
-        match step.0.as_ref() {
+        match operation.op.as_ref() {
             "nop" => {
-                // it does nothing
                 jmp_num = 1;
             },
             "acc" => {
-                global_acc += step.1;
+                global_acc += operation.num;
                 jmp_num = 1;
             },
             "jmp" => {
-                jmp_num = step.1;
+                jmp_num = operation.num;
             },
-            _ => panic!(),
+            _ => unreachable!(),
         }
 
-        count += 1;        
-        instructions[index].2 = count;
+        op_sequence += 1;        
+        instructions[op_index].sequence = op_sequence;
 
-        index = (i32::try_from(index).unwrap() + jmp_num) as usize;
+        op_index = (i32::try_from(op_index).unwrap() + jmp_num) as usize;
     }
-
+    
     Ok(())
 }
