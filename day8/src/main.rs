@@ -12,11 +12,6 @@ lazy_static! {
     static ref RE: Regex = Regex::new(r"^(\w+)\s([-+]?\d+)$").unwrap(); 
 }
 
-fn main() -> Result<()> {
-    let instructions = parser()?;    
-    run_instructions(instructions)
-}
-
 #[derive(Debug)]
 struct Operation {
     op: String,
@@ -24,8 +19,15 @@ struct Operation {
     sequence: usize,
 }
 
-fn parser() -> Result<Vec<Operation>> {
-    let file = File::open("input.txt")?;
+
+
+fn main() -> Result<()> {
+    let instructions = parser("input.txt")?;    
+    run_instructions(instructions)
+}
+
+fn parser(file: &str) -> Result<Vec<Operation>> {
+    let file = File::open(file)?;
     let reader = BufReader::new(file);
 
     let mut instructions = Vec::<Operation>::new();
