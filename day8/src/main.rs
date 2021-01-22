@@ -17,6 +17,7 @@ fn main() -> Result<()> {
     let reader = BufReader::new(file);
 
     let mut instructions = Vec::<(String, i32, usize)>::new();
+
     for line in reader.lines() {
         let line = line?;
         let caps = RE.captures(&line).unwrap();
@@ -28,29 +29,28 @@ fn main() -> Result<()> {
         instructions.push(instruction);
     }
 
-    let len = &instructions.len();
-
     let mut count: usize = 0;
     let mut index: usize = 0;
     let mut global_acc = 0;
         
     loop {
         let step = &instructions[index];
-//        println!("index: {}; instruction: {:?}; count: {}; global_acc: {}", index, step, count, global_acc);
         
         if step.2 != 0 {
             println!("Break at index: {}; instruction: {:?}; count: {}; global_acc: {}", index, step, count, global_acc);
             break;
         }
 
-        let mut jmp_num = 0;
+        let jmp_num;
         
         match step.0.as_ref() {
             "nop" => {
                 // it does nothing
+                jmp_num = 1;
             },
             "acc" => {
                 global_acc += step.1;
+                jmp_num = 1;
             },
             "jmp" => {
                 jmp_num = step.1;
@@ -61,14 +61,7 @@ fn main() -> Result<()> {
         count += 1;        
         instructions[index].2 = count;
 
-        // index changes
-        if jmp_num == 0 {
-            index += 1;
-        } else {
-            index = (i32::try_from(index).unwrap() + jmp_num) as usize;
-        }
-//        println!("new index: {}", index);
-//        println!("end loop -----------------------------------");
+        index = (i32::try_from(index).unwrap() + jmp_num) as usize;
     }
 
     Ok(())
