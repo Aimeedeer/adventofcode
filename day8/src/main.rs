@@ -48,16 +48,26 @@ fn parser(file: &str) -> Result<Vec<Operation>> {
     Ok(instructions)
 }
 
-fn run_instructions(mut instructions: Vec<Operation>) -> Result<()>{
+fn run_instructions(mut instructions: Vec<Operation>) -> Result<()> {
     let mut op_sequence = 0;
     let mut op_index = 0;
     let mut global_acc = 0;
+    let len = instructions.len();
     
-    loop {
-        let operation = &instructions[op_index];
+    loop {        
+        if op_index == len - 1 {
+            println!("Loop terminates, and the global_acc is: {}", global_acc);
+            break;
+        }
         
+        if op_index < 0 || op_index >= len {
+            println!("Infinite loop caused by index: {}", op_index);
+            break;
+        }
+            
+        let operation = &instructions[op_index];
         if operation.sequence != 0 {
-            println!("Break at index: {}; operation: {:?}; sequence: {}; global_acc: {}", op_index, operation, op_sequence, global_acc);
+            println!("Infinite loop breaks at index: {}; operation: {:?}; sequence: {}; global_acc: {}", op_index, operation, op_sequence, global_acc);
             break;
         }
 
