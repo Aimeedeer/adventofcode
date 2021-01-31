@@ -16,15 +16,12 @@ lazy_static! {
 struct Operation {
     op: String,
     num: i32,
-    sequence: usize,
+    is_executed: bool,
 }
 
 fn main() -> Result<()> {
     let instructions = parser("input.txt")?;
-    correct_instructions(instructions)
-
-    // part 1
-    // run does_program_terminate()
+    find_correct_program(instructions)
 }
 
 fn parser(file: &str) -> Result<Vec<Operation>> {
@@ -40,7 +37,7 @@ fn parser(file: &str) -> Result<Vec<Operation>> {
         let operation = Operation {
             op: caps[1].to_string(),
             num: caps[2].parse::<i32>()?,
-            sequence: 0,
+            is_executed: false,
         };
 
         instructions.push(operation);
@@ -49,7 +46,7 @@ fn parser(file: &str) -> Result<Vec<Operation>> {
     Ok(instructions)
 }
 
-fn correct_instructions(instructions: Vec<Operation>) -> Result<()> {
+fn find_correct_program(instructions: Vec<Operation>) -> Result<()> {
     for (index, operation) in instructions.iter().enumerate() {
         let mut ins = instructions.to_vec();
 
@@ -74,24 +71,22 @@ fn correct_instructions(instructions: Vec<Operation>) -> Result<()> {
 }
 
 fn does_program_terminate(mut instructions: Vec<Operation>) -> bool {
-    let mut op_sequence = 0;
     let mut op_index = 0;
     let mut global_acc = 0;
     let len = instructions.len();
 
     loop {
         let operation = &instructions[op_index];
-        if operation.sequence != 0 {
-            println!(
-                "Infinite loop breaks at index: {}; operation: {:?}; sequence: {}; global_acc: {}",
-                op_index, operation, op_sequence, global_acc
+        if operation.is_executed == true {
+/*            println!(
+                "Infinite loop breaks at index: {}; operation: {:?}; global_acc: {}",
+                op_index, operation, global_acc
             );
-
+*/
             return false;
         }
 
         let jmp_num;
-
         match operation.op.as_ref() {
             "nop" => {
                 jmp_num = 1;
@@ -106,8 +101,7 @@ fn does_program_terminate(mut instructions: Vec<Operation>) -> bool {
             _ => unreachable!(),
         }
 
-        op_sequence += 1;
-        instructions[op_index].sequence = op_sequence;
+        instructions[op_index].is_executed = true;
 
         if op_index == len - 1 {
             println!("Loop terminates, and the global_acc is: {}", global_acc);
