@@ -22,6 +22,9 @@ struct Operation {
 fn main() -> Result<()> {
     let instructions = parser("input.txt")?;
     correct_instructions(instructions)
+
+    // part 1
+    // run does_program_terminate()
 }
 
 fn parser(file: &str) -> Result<Vec<Operation>> {
@@ -75,20 +78,8 @@ fn does_program_terminate(mut instructions: Vec<Operation>) -> bool {
     let mut op_index = 0;
     let mut global_acc = 0;
     let len = instructions.len();
-    let mut result = false;
 
     loop {
-        if op_index == len - 1 {
-            println!("Loop terminates, and the global_acc is: {}", global_acc);
-            result = true;
-            break;
-        }
-
-        if op_index >= len {
-            println!("Infinite loop caused by index: {}", op_index);
-            break;
-        }
-
         let operation = &instructions[op_index];
         if operation.sequence != 0 {
             println!(
@@ -96,7 +87,7 @@ fn does_program_terminate(mut instructions: Vec<Operation>) -> bool {
                 op_index, operation, op_sequence, global_acc
             );
 
-            break;
+            return false;
         }
 
         let jmp_num;
@@ -118,8 +109,21 @@ fn does_program_terminate(mut instructions: Vec<Operation>) -> bool {
         op_sequence += 1;
         instructions[op_index].sequence = op_sequence;
 
-        op_index = (i32::try_from(op_index).unwrap() + jmp_num) as usize;
-    }
+        if op_index == len - 1 {
+            println!("Loop terminates, and the global_acc is: {}", global_acc);
+            return true;
+        }
 
-    result
+        let new_index = i32::try_from(op_index).unwrap() + jmp_num;
+        if new_index < 0 {
+            println!("Index is less than 0");
+            return false;
+        }
+        op_index = new_index as usize;
+
+        if op_index >= len {
+            println!("Infinite loop caused by index: {}", op_index);
+            return false;
+        }
+    }
 }
